@@ -278,7 +278,7 @@
 
     <script>
         // 3D Background with Three.js
-        let scene, camera, renderer, stars, particles;
+        let scene, camera, renderer, stars, controls;
 
         function initThree() {
             // Scene
@@ -291,9 +291,16 @@
 
             // Renderer
             renderer = new THREE.WebGLRenderer({ alpha: true });
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.setClearColor(0x000000, 0);
             document.getElementById('three-container').appendChild(renderer.domElement);
+
+            // Lights (MeshPhongMaterial needs lights — without these the cubes render black)
+            scene.add(new THREE.AmbientLight(0xffffff, 0.7));
+            const dirLight = new THREE.DirectionalLight(0xffffff, 0.9);
+            dirLight.position.set(5, 8, 6);
+            scene.add(dirLight);
 
             // Stars
             createStars();
@@ -302,7 +309,7 @@
             createFloatingCubes();
 
             // Controls
-            const controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
             controls.enableDamping = true;
             controls.autoRotate = true;
             controls.autoRotateSpeed = 0.5;
@@ -359,6 +366,9 @@
         function animate() {
             requestAnimationFrame(animate);
 
+            // Required every frame for damping + autoRotate to work
+            if (controls) controls.update();
+
             // Rotate stars
             if (stars) stars.rotation.y += 0.0002;
 
@@ -387,16 +397,6 @@
 
         // Initialize 3D scene
         initThree();
-
-        // Parallax effect on scroll
-        window.addEventListener('scroll', () => {
-            const scrolled = window.pageYOffset;
-            const parallax = document.querySelectorAll('.service-card');
-            parallax.forEach((card, index) => {
-                const speed = 0.5;
-                card.style.transform = `translateY(${scrolled * speed * (index + 1) * 0.01}px)`;
-            });
-        });
     </script>
 </body>
 </html>
